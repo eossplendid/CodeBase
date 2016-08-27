@@ -43,20 +43,22 @@ typedef void VOID;
 #define PUB_LIST_ROOT_DEF(listRoot)	LIST_HEAD(listRoot)
 /*get list node one by one*/
 #define PUB_LIST_TRAVERSAL(iterator, listRoot, listNode)	list_for_each_entry(iterator, listRoot, listNode) 
+/*traversal for delete list node*/
+#define PUB_LIST_TRAVERSAL_SAFE(iterator, next, listRoot, listNode)	list_for_each_entry_safe(iterator, next, listRoot, listNode)
 /*del a list node */
 #define PUB_LIST_DEL(node)	list_del(node)
 /*list is empty or not*/
 #define PUB_LIST_IS_EMPTY(list)	list_empty(list)
 /*clear all list node & free memory*/
-#define PUB_LIST_CLEAR(iterator, head, listNode)	\
-do													\
-{													\
-	PUB_LIST_TRAVERSAL(iterator, head, listNode) {	\
-		if (PUB_LIST_IS_EMPTY(head))				\
-			break;									\
-		PUB_LIST_DEL(&iterator->listNode);			\
-		PUB_MEM_FREE(iterator);						\
-	}												\
+#define PUB_LIST_CLEAR(iterator, next, head, listNode)	\
+do														\
+{														\
+	PUB_LIST_TRAVERSAL_SAFE(iterator, next, head, listNode) {	\
+		if (PUB_LIST_IS_EMPTY(head))					\
+			break;										\
+		PUB_LIST_DEL(&iterator->listNode);				\
+		PUB_MEM_FREE(iterator);							\
+	}													\
 }while(0)
 
 

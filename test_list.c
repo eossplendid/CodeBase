@@ -77,7 +77,7 @@ VOID test2()
 	/*define list node & iterator for traversal*/
 	T_CMD_NODE *ptNode = NULL;
 	T_CMD_NODE *ptNode2;
-	T_CMD_NODE *ptIterator = NULL;
+	T_CMD_NODE *ptIterator, *next = NULL;
 
 	/*create node*/
 	ptNode = (T_CMD_NODE *)PUB_MEM_MALLOC(sizeof(T_CMD_NODE));
@@ -113,7 +113,7 @@ VOID test2()
 
 	/*clear all node & PUB_MEM_FREE the memory, leave root empty*/
 	PUB_PRINT("list status:%d\n",PUB_LIST_IS_EMPTY(&tCmdRoot));
-	PUB_LIST_CLEAR(ptIterator, &tCmdRoot, tListNode);
+	PUB_LIST_CLEAR(ptIterator, next, &tCmdRoot, tListNode);
 	PUB_PRINT("list status:%d\n",PUB_LIST_IS_EMPTY(&tCmdRoot));
 	
 
