@@ -112,7 +112,11 @@ struct list_head {
     struct list_head *next, *prev;
 };
 
+/*
+ *typedef list_head struct 
+ * */
 typedef struct list_head T_DOUBLE_LINK_LIST;
+
 /**
  * Initialize the list as an empty list.
  *
@@ -198,11 +202,7 @@ __list_del(struct list_head *prev, struct list_head *next)
  *
  * Using list_del on a pure list head (like in the example at the top of
  * this file) will NOT remove the first element from
- * the list but rather reset the list as empty list.
- *
- * Example:
- * list_del(&foo->entry);
- *
+ * the list but rather reset the list as empty list.  * * Example: * list_del(&foo->entry); *
  * @param entry The element to remove.
  */
 static inline void

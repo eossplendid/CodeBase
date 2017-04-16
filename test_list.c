@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include "pub_list.h"
 #include "pub_macro.h"
 
@@ -19,6 +20,28 @@ typedef struct {
 	T_DOUBLE_LINK_LIST tListNode;
 }T_CMD_NODE;
 
+/*FUNC set the value of T_TEST_STU*/
+#define FUNC_SET_STU(stu, age, sex, score)	\
+do	\
+{\
+	(stu)->uiAge = (age);	\
+	(stu)->uiSex = (sex);	\
+	(stu)->uiScore = (score);	\
+}while(0)
+
+/*FUNC set the value of T_CMD_NODE*/
+#define FUNC_SET_CMD(cmd, code, oper, status)	\
+do	\
+{\
+	(cmd)->uiCmdCode = (code);	\
+	(cmd)->usOper = (oper);	\
+	(cmd)->usStatus = (status);	\
+}while(0)
+
+extern int errno;
+
+#if 0
+/*use origin list interface*/
 VOID test1()
 {
 	T_TEST_STU *ptStu = NULL;
@@ -31,10 +54,7 @@ VOID test1()
 		PUB_PRINT("ptStu PUB_MEM_MALLOC failed\n");
 		goto EXIT_LABEL;
 	}
-	ptStu->uiAge = 1;
-	ptStu->uiSex = 1;
-	ptStu->uiScore = 100;
-
+	FUNC_SET_STU(ptStu, 1, 1, 100);
 
 	INIT_LIST_HEAD(&ptStu->tListNode);
 	list_add(&ptStu->tListNode,&tListRoot);
@@ -44,9 +64,7 @@ VOID test1()
 		PUB_PRINT("ptStu PUB_MEM_MALLOC failed\n");
 		goto EXIT_LABEL;
 	}
-	ptStu2->uiAge = 2;
-	ptStu2->uiSex = 2;
-	ptStu2->uiScore = 150;
+	FUNC_SET_STU(ptStu2, 2, 2, 150);
 	INIT_LIST_HEAD(&ptStu2->tListNode);
 	list_add(&ptStu2->tListNode,&tListRoot);
 
@@ -68,6 +86,7 @@ VOID test1()
 EXIT_LABEL:
 	return ;
 }
+#endif
 
 /*use self defined macro*/
 VOID test2()
@@ -82,28 +101,31 @@ VOID test2()
 	/*create node*/
 	ptNode = (T_CMD_NODE *)PUB_MEM_MALLOC(sizeof(T_CMD_NODE));
 	if (PUB_PTR_IS_NULL(ptNode)) {
-		PUB_PRINT("ptNode PUB_MEM_MALLOC failed\n");
+		PUB_PRINT("ptNode PUB_MEM_MALLOC failed:%s\n", strerror(errno));
 		goto EXIT_LABEL;
 	}
 
-	ptNode->uiCmdCode = 0x1A2B3C4D;
-	ptNode->usOper = 0x1;
-	ptNode->usStatus = 0x1;
+	FUNC_SET_CMD(ptNode, 0x1A2B3C4D, 0x1, 0x1);
 
 	/*init list in the node & add to list root*/
 	PUB_LIST_INIT(&ptNode->tListNode);
 	PUB_LIST_ADD(&ptNode->tListNode, &tCmdRoot);
 
 	ptNode2 = (T_CMD_NODE *)PUB_MEM_MALLOC(sizeof(T_CMD_NODE));
+	if (PUB_PTR_IS_NULL(ptNode2)) {
+		PUB_PRINT("ptNode2 PUB_MEM_MALLOC failed\n");
+		goto EXIT_LABEL;
+	}
 
-	ptNode2->uiCmdCode = 0xDCBA4321;
-	ptNode2->usOper = 0x2;
-	ptNode2->usStatus = 0x2;
+	FUNC_SET_CMD(ptNode2, 0xDCBA4321, 0x2, 0x2);
 	
 	PUB_LIST_INIT(&ptNode2->tListNode);
 	PUB_LIST_ADD(&ptNode2->tListNode, &tCmdRoot);
 
-	/*list traversal, check every node*/
+	/*
+	 * list traversal, check every node, 
+	 * if you need to delete some node, use PUB_LIST_TRAVERSAL_SAFE()
+	 * */
 	PUB_LIST_TRAVERSAL(ptIterator, &tCmdRoot, tListNode) {
 		PUB_PRINT("cmd:%x, opr:%x, status:%x\n",
 					ptIterator->uiCmdCode,
@@ -111,12 +133,14 @@ VOID test2()
 					ptIterator->usStatus);
 	}
 
-	/*clear all node & PUB_MEM_FREE the memory, leave root empty*/
+	/*
+	 * clear all node & PUB_MEM_FREE the memory, leave root empty
+	 * if tCmdRoot is not cleared here, you can check this issue out by using valgrind 
+	 * */
 	PUB_PRINT("list status:%d\n",PUB_LIST_IS_EMPTY(&tCmdRoot));
 	PUB_LIST_CLEAR(ptIterator, next, &tCmdRoot, tListNode);
 	PUB_PRINT("list status:%d\n",PUB_LIST_IS_EMPTY(&tCmdRoot));
 	
-
 EXIT_LABEL:
 	return;
 }
